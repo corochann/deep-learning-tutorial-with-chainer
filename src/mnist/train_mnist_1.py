@@ -26,7 +26,7 @@ def main():
                         help='Number of sweeps over the dataset to train')
     parser.add_argument('--gpu', '-g', type=int, default=0,
                         help='GPU ID (negative value indicates CPU)')
-    parser.add_argument('--out', '-o', default='result',
+    parser.add_argument('--out', '-o', default='result/1',
                         help='Directory to output the result')
     parser.add_argument('--resume', '-r', default='',
                         help='Resume the training from snapshot')
@@ -87,7 +87,7 @@ def main():
             optimizer.update(classifier_model, x, t)
 
             if epoch == 1 and i == 0:
-                with open('graph.dot', 'w') as o:
+                with open('{}/graph.dot'.format(args.out), 'w') as o:
                     g = computational_graph.build_computational_graph(
                         (classifier_model.loss,))
                     o.write(g.dump())
