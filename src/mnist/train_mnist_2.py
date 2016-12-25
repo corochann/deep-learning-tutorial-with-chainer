@@ -7,8 +7,9 @@ import chainer.functions as F
 import chainer.links as L
 from chainer import training
 from chainer.training import extensions
+from chainer import serializers
 
-import src.mnist.mlp as mlp
+import mlp as mlp
 
 
 def main():
@@ -17,7 +18,7 @@ def main():
                         help='Number of images in each mini-batch')
     parser.add_argument('--epoch', '-e', type=int, default=20,
                         help='Number of sweeps over the dataset to train')
-    parser.add_argument('--gpu', '-g', type=int, default=-1,
+    parser.add_argument('--gpu', '-g', type=int, default=0,
                         help='GPU ID (negative value indicates CPU)')
     parser.add_argument('--out', '-o', default='result',
                         help='Directory to output the result')
@@ -36,14 +37,15 @@ def main():
     # Set up a neural network to train
     # Classifier reports softmax cross entropy loss and accuracy at every
     # iteration, which will be used by the PrintReport extension below.
-    model = L.Classifier(mlp.MLP(args.unit, 10))
+    model = mlp.MLP(args.unit, 10)
+    classifier_model = L.Classifier(model)
     if args.gpu >= 0:
         chainer.cuda.get_device(args.gpu).use()  # Make a specified GPU current
-        model.to_gpu()  # Copy the model to the GPU
+        classifier_model.to_gpu()  # Copy the model to the GPU
 
     # Setup an optimizer
     optimizer = chainer.optimizers.Adam()
-    optimizer.setup(model)
+    optimizer.setup(classifier_model)
 
     # Load the MNIST dataset
     train, test = chainer.datasets.get_mnist()
@@ -57,7 +59,7 @@ def main():
     trainer = training.Trainer(updater, (args.epoch, 'epoch'), out=args.out)
 
     # Evaluate the model with the test dataset for each epoch
-    trainer.extend(extensions.Evaluator(test_iter, model, device=args.gpu))
+    trainer.extend(extensions.Evaluator(test_iter, classifier_model, device=args.gpu))
 
     # Dump a computational graph from 'loss' variable at the first iteration
     # The "main" refers to the target link of the "main" optimizer.
@@ -83,10 +85,11 @@ def main():
 
     if args.resume:
         # Resume from a snapshot
-        chainer.serializers.load_npz(args.resume, trainer)
+        serializers.load_npz(args.resume, trainer)
 
     # Run the training
     trainer.run()
+    serializers.save_npz('{}/mlp2.model'.format(args.out), model)
 
 if __name__ == '__main__':
     main()
