@@ -59,6 +59,8 @@ def main():
         x = Variable(xp.asarray([test[i][0]]))  # test data
         # t = Variable(xp.asarray([test[i][1]]))  # labels
         y = model(x)
+        np.set_printoptions(precision=2, suppress=True)
+        print('{}-th image: answer = {}, predict = {}'.format(i, test[i][1], F.softmax(y).data))
         prediction = y.data.argmax(axis=1)
         example = (test[i][0] * 255).astype(np.int32).reshape(28, 28)
         plt.subplot(3, 5, i+1)
