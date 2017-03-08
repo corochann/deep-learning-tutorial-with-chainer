@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from __future__ import print_function
 import argparse
 
@@ -18,13 +17,13 @@ def main():
                         help='Number of images in each mini-batch')
     parser.add_argument('--epoch', '-e', type=int, default=20,
                         help='Number of sweeps over the dataset to train')
-    parser.add_argument('--gpu', '-g', type=int, default=0,
+    parser.add_argument('--gpu', '-g', type=int, default=-1,
                         help='GPU ID (negative value indicates CPU)')
-    parser.add_argument('--out', '-o', default='result/2',
+    parser.add_argument('--out', '-o', default='result/4',
                         help='Directory to output the result')
     parser.add_argument('--resume', '-r', default='',
                         help='Resume the training from snapshot')
-    parser.add_argument('--unit', '-u', type=int, default=1000,
+    parser.add_argument('--unit', '-u', type=int, default=50,
                         help='Number of units')
     args = parser.parse_args()
 
@@ -66,7 +65,8 @@ def main():
     trainer.extend(extensions.dump_graph('main/loss'))
 
     # Take a snapshot at each epoch
-    trainer.extend(extensions.snapshot(), trigger=(args.epoch, 'epoch'))
+    #trainer.extend(extensions.snapshot(), trigger=(args.epoch, 'epoch'))
+    trainer.extend(extensions.snapshot(), trigger=(1, 'epoch'))
 
     # Write a log of evaluation statistics for each epoch
     trainer.extend(extensions.LogReport())
@@ -89,7 +89,7 @@ def main():
 
     # Run the training
     trainer.run()
-    serializers.save_npz('{}/mlp2.model'.format(args.out), model)
+    serializers.save_npz('{}/mlp.model'.format(args.out), model)
 
 if __name__ == '__main__':
     main()

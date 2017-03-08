@@ -18,9 +18,8 @@ from chainer import cuda
 from chainer import serializers
 
 
-# Neural Network definition, Multi Layer Perceptron
 class MLP(chainer.Chain):
-
+    """Neural Network definition, Multi Layer Perceptron"""
     def __init__(self, n_units, n_out):
         super(MLP, self).__init__(
             # the size of the inputs to each layer will be inferred
@@ -36,9 +35,12 @@ class MLP(chainer.Chain):
         return y
 
 
-class SoftMaxClassifier(chainer.Chain):
+class SoftmaxClassifier(chainer.Chain):
+    """Classifier is for calculating loss, from predictor's output.
+    predictor is a model that predicts the probability of each label.
+    """
     def __init__(self, predictor):
-        super(SoftMaxClassifier, self).__init__(
+        super(SoftmaxClassifier, self).__init__(
             predictor=predictor
         )
 
@@ -51,11 +53,11 @@ class SoftMaxClassifier(chainer.Chain):
 
 def main():
     # Configuration setting
-    gpu = -1      # GPU ID to be used for calculation. -1 indicates to use only CPU.
-    batchsize = 100
-    epoch = 20
-    out = 'result/1_minimum'
-    unit = 50  # Try incresing this value
+    gpu = -1                  # GPU ID to be used for calculation. -1 indicates to use only CPU.
+    batchsize = 100           # Minibatch size for training
+    epoch = 20                # Number of training epoch
+    out = 'result/1'  # Directory to save the results
+    unit = 50                 # Number of hidden layer units, try incresing this value and see if how accuracy changes.
 
     print('GPU: {}'.format(gpu))
     print('# unit: {}'.format(unit))
@@ -66,7 +68,7 @@ def main():
     # Set up a neural network to train
     model = MLP(unit, 10)
     # Classifier will calculate classification loss, based on the output of model
-    classifier_model = SoftMaxClassifier(model)
+    classifier_model = SoftmaxClassifier(model)
 
     if gpu >= 0:
         chainer.cuda.get_device(gpu).use()  # Make a specified GPU current

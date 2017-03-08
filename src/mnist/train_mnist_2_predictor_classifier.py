@@ -1,7 +1,7 @@
-#!/usr/bin/env python
 from __future__ import print_function
 import argparse
 import time
+import os
 
 import numpy as np
 import six
@@ -24,13 +24,13 @@ def main():
                         help='Number of images in each mini-batch')
     parser.add_argument('--epoch', '-e', type=int, default=20,
                         help='Number of sweeps over the dataset to train')
-    parser.add_argument('--gpu', '-g', type=int, default=0,
+    parser.add_argument('--gpu', '-g', type=int, default=-1,
                         help='GPU ID (negative value indicates CPU)')
-    parser.add_argument('--out', '-o', default='result/1',
+    parser.add_argument('--out', '-o', default='result/2',
                         help='Directory to output the result')
     parser.add_argument('--resume', '-r', default='',
                         help='Resume the training from snapshot')
-    parser.add_argument('--unit', '-u', type=int, default=1000,
+    parser.add_argument('--unit', '-u', type=int, default=50,
                         help='Number of units')
     args = parser.parse_args()
 
@@ -69,6 +69,9 @@ def main():
     if args.resume:
         print('Load optimizer state from', args.resume)
         serializers.load_npz(args.resume, optimizer)
+
+    if not os.path.exists(args.out):
+        os.makedirs(args.out)
 
     # Learning loop
     for epoch in six.moves.range(1, n_epoch + 1):
@@ -119,10 +122,10 @@ def main():
 
     # Save the model and the optimizer
     print('save the model')
-    serializers.save_npz('{}/classifier_mlp1.model'.format(args.out), classifier_model)
-    serializers.save_npz('{}/mlp1.model'.format(args.out), model)
+    serializers.save_npz('{}/classifier.model'.format(args.out), classifier_model)
+    serializers.save_npz('{}/mlp.model'.format(args.out), model)
     print('save the optimizer')
-    serializers.save_npz('{}/mlp1.state'.format(args.out), optimizer)
+    serializers.save_npz('{}/mlp.state'.format(args.out), optimizer)
 
 if __name__ == '__main__':
     main()
