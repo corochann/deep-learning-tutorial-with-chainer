@@ -1,4 +1,7 @@
-#!/usr/bin/env python
+"""Inference/predict code for MNIST
+
+model must be trained before inference, train_mnist_4_trainer.py must be executed beforehand.
+"""
 from __future__ import print_function
 import argparse
 import time
@@ -19,11 +22,11 @@ import src.mnist.mlp as mlp
 
 def main():
     parser = argparse.ArgumentParser(description='Chainer example: MNIST')
-    parser.add_argument('--modelpath', '-m', default='result/mlp1.model',
+    parser.add_argument('--modelpath', '-m', default='result/4/mlp.model',
                         help='Model path to be loaded')
-    parser.add_argument('--gpu', '-g', type=int, default=0,
+    parser.add_argument('--gpu', '-g', type=int, default=-1,
                         help='GPU ID (negative value indicates CPU)')
-    parser.add_argument('--unit', '-u', type=int, default=1000,
+    parser.add_argument('--unit', '-u', type=int, default=50,
                         help='Number of units')
     args = parser.parse_args()
 
@@ -42,10 +45,9 @@ def main():
     # check all the results
     wrong_count = 0
     for i in range(len(test)):
-        x = Variable(xp.asarray([test[i][0]]))  # test data
+        x = Variable(xp.asarray([test[i][0]]))    # test data
         # t = Variable(xp.asarray([test[i][1]]))  # labels
-        #print('debug i ', i)
-        y = model(x)
+        y = model(x)                              # Inference result
         prediction = y.data.argmax(axis=1)
         if prediction != test[i][1]:
             #print('{}-th data inference is wrong, prediction = {}, actual = {}'
@@ -53,9 +55,14 @@ def main():
             wrong_count += 1
     print('wrong inference {}/{}'.format(wrong_count, len(test)))
 
-    # show graphical results of first 15 data to understand what's going on in inference stage
+
+    """Original code referenced from https://github.com/hido/chainer-handson"""
+    ROW = 4
+    COLUMN = 5
+    # show graphical results of first 20 data to understand what's going on in inference stage
     plt.figure(figsize=(15, 10))
-    for i in range(15):
+    for i in range(ROW * COLUMN):
+        # Example of predicting the test input one by one.
         x = Variable(xp.asarray([test[i][0]]))  # test data
         # t = Variable(xp.asarray([test[i][1]]))  # labels
         y = model(x)
@@ -63,7 +70,7 @@ def main():
         print('{}-th image: answer = {}, predict = {}'.format(i, test[i][1], F.softmax(y).data))
         prediction = y.data.argmax(axis=1)
         example = (test[i][0] * 255).astype(np.int32).reshape(28, 28)
-        plt.subplot(3, 5, i+1)
+        plt.subplot(ROW, COLUMN, i+1)
         plt.imshow(example, cmap='gray')
         plt.title("No.{0} / Answer:{1}, Predict:{2}".format(i, test[i][1], prediction))
         plt.axis("off")
