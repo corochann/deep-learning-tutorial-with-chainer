@@ -1,7 +1,7 @@
-# chainer-hands-on-tutorial
+# Deep learning tutorial with Chainer
 
 The source code of
-[Chainer hands on tutorial](http://corochann.com/chainer-hands-on-tutorial).
+[Deep learning tutorial with Chainer](http://corochann.com/deep-learning-tutorial-with-chainer).
 
 The tutorial includes following examples,
 
