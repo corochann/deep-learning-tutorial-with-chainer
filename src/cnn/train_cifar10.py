@@ -7,7 +7,7 @@ import chainer.links as L
 from chainer import training, iterators, serializers, optimizers
 from chainer.training import extensions
 
-from src.cnn.CNNSmall import CNNSmall
+from CNNSmall import CNNSmall
 
 
 def main():

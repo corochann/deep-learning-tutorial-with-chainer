@@ -91,3 +91,4 @@ ENV/
 .idea/
 mlp.model
 mlp.state
+src/cnn/result-cifar10/
