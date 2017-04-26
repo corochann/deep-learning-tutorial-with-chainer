@@ -17,7 +17,7 @@ def main():
         'cnnmedium': CNNMedium,
     }
 
-    parser = argparse.ArgumentParser(description='Cifar-10 CNN example')
+    parser = argparse.ArgumentParser(description='Cifar-100 CNN example')
     parser.add_argument('--arch', '-a', choices=archs.keys(),
                         default='cnnsmall', help='Convnet architecture')
     parser.add_argument('--batchsize', '-b', type=int, default=64,
@@ -26,7 +26,7 @@ def main():
                         help='Number of sweeps over the dataset to train')
     parser.add_argument('--gpu', '-g', type=int, default=-1,
                         help='GPU ID (negative value indicates CPU)')
-    parser.add_argument('--out', '-o', default='result-cifar10',
+    parser.add_argument('--out', '-o', default='result-cifar100',
                         help='Directory to output the result')
     parser.add_argument('--resume', '-r', default='',
                         help='Resume the training from snapshot')
@@ -38,7 +38,7 @@ def main():
     print('')
 
     # 1. Setup model
-    class_num = 10
+    class_num = 100
     model = archs[args.arch](n_out=class_num)
     classifier_model = L.Classifier(model)
     if args.gpu >= 0:
@@ -50,7 +50,7 @@ def main():
     optimizer.setup(classifier_model)
 
     # 3. Load the CIFAR-10 dataset
-    train, test = chainer.datasets.get_cifar10()
+    train, test = chainer.datasets.get_cifar100()
 
     # 4. Setup an Iterator
     train_iter = iterators.SerialIterator(train, args.batchsize)
@@ -87,7 +87,7 @@ def main():
 
     # Run the training
     trainer.run()
-    serializers.save_npz('{}/{}-cifar10.model'
+    serializers.save_npz('{}/{}-cifar100.model'
                          .format(args.out, args.arch), model)
 
 if __name__ == '__main__':
