@@ -23,7 +23,7 @@ print('train[0][0]', train[0][0].shape, train[0][0])
 print('train[0][1]', train[0][1].shape, train[0][1])
 
 # we cannot slice tupleDataset like this
-print('train[0:3][0]', type(train[0:3][0]), train[0:3][0])
+print('train[0:3][0]', type(train[0:3][0]), train[0:3][0])  # this is tuple class and not the set of x
 print('train[0:3][1]', type(train[0:3][1]), train[0:3][1])
 
 # we can slice tupleDataset using numpy array
