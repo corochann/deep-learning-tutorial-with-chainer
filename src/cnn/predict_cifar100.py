@@ -1,4 +1,4 @@
-"""Inference/predict code for CIFAR-10
+"""Inference/predict code for CIFAR-100
 
 model must be trained before inference, 
 train_cifar10.py must be executed beforehand.
@@ -20,17 +20,22 @@ from chainer.training import extensions
 from CNNSmall import CNNSmall
 from CNNMedium import CNNMedium
 
-CIFAR10_LABELS_LIST = [
-    'airplane',
-    'automobile',
-    'bird',
-    'cat',
-    'deer',
-    'dog',
-    'frog',
-    'horse',
-    'ship',
-    'truck'
+CIFAR100_LABELS_LIST = [
+    'apple', 'aquarium_fish', 'baby', 'bear', 'beaver', 'bed', 'bee', 'beetle',
+    'bicycle', 'bottle', 'bowl', 'boy', 'bridge', 'bus', 'butterfly', 'camel',
+    'can', 'castle', 'caterpillar', 'cattle', 'chair', 'chimpanzee', 'clock',
+    'cloud', 'cockroach', 'couch', 'crab', 'crocodile', 'cup', 'dinosaur',
+    'dolphin', 'elephant', 'flatfish', 'forest', 'fox', 'girl', 'hamster',
+    'house', 'kangaroo', 'keyboard', 'lamp', 'lawn_mower', 'leopard', 'lion',
+    'lizard', 'lobster', 'man', 'maple_tree', 'motorcycle', 'mountain', 'mouse',
+    'mushroom', 'oak_tree', 'orange', 'orchid', 'otter', 'palm_tree', 'pear',
+    'pickup_truck', 'pine_tree', 'plain', 'plate', 'poppy', 'porcupine',
+    'possum', 'rabbit', 'raccoon', 'ray', 'road', 'rocket', 'rose',
+    'sea', 'seal', 'shark', 'shrew', 'skunk', 'skyscraper', 'snail', 'snake',
+    'spider', 'squirrel', 'streetcar', 'sunflower', 'sweet_pepper', 'table',
+    'tank', 'telephone', 'television', 'tiger', 'tractor', 'train', 'trout',
+    'tulip', 'turtle', 'wardrobe', 'whale', 'willow_tree', 'wolf', 'woman',
+    'worm'
 ]
 
 
@@ -40,12 +45,12 @@ def main():
         'cnnmedium': CNNMedium,
     }
 
-    parser = argparse.ArgumentParser(description='Cifar-10 CNN predict code')
+    parser = argparse.ArgumentParser(description='Cifar-100 CNN predict code')
     parser.add_argument('--arch', '-a', choices=archs.keys(),
                         default='cnnsmall', help='Convnet architecture')
     #parser.add_argument('--batchsize', '-b', type=int, default=64,
     #                    help='Number of images in each mini-batch')
-    parser.add_argument('--modelpath', '-m', default='result-cifar10-cnnsmall/cnnsmall-cifar10.model',
+    parser.add_argument('--modelpath', '-m', default='result-cifar100-cnnsmall/cnnsmall-cifar100.model',
                         help='Model path to be loaded')
     parser.add_argument('--gpu', '-g', type=int, default=-1,
                         help='GPU ID (negative value indicates CPU)')
@@ -56,7 +61,7 @@ def main():
     print('')
 
     # 1. Setup model
-    class_num = 10
+    class_num = 100
     model = archs[args.arch](n_out=class_num)
     classifier_model = L.Classifier(model)
     if args.gpu >= 0:
@@ -67,11 +72,11 @@ def main():
     serializers.load_npz(args.modelpath, model)
 
     # 2. Load the CIFAR-10 dataset
-    train, test = chainer.datasets.get_cifar10()
+    train, test = chainer.datasets.get_cifar100()
 
     basedir = 'images'
-    plot_predict_cifar(os.path.join(basedir, 'cifar10_predict.png'), model,
-                       train, 4, 5, scale=5., label_list=CIFAR10_LABELS_LIST)
+    plot_predict_cifar(os.path.join(basedir, 'cifar100_predict.png'), model,
+                       train, 4, 5, scale=5., label_list=CIFAR100_LABELS_LIST)
 
 
 def plot_predict_cifar(filepath, model, data, row, col,
@@ -99,7 +104,7 @@ def plot_predict_cifar(filepath, model, data, row, col,
                                  .format(label_index, prediction[0]))
         else:
             pred = int(prediction[0])
-            axes[r][c].set_title('Predict:{} {}\nAnswer:{} {}'
+            axes[r][c].set_title('Answer:{} {}\nPredict:{} {}'
                                  .format(label_index, label_list[label_index],
                                          pred, label_list[pred]))
         axes[r][c].axis('off')  # do not show axis value
