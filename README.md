@@ -9,5 +9,5 @@ The tutorial includes following examples,
 ![MNIST inference result](https://github.com/corochann/chainer-hands-on-tutorial/blob/master/src/mnist/inference.png)
 
 ## Convolutional Neural Network (CNN) for CIFAR-10, CIFAR-100 image classification
-![CNN inference result](https://github.com/corochann/chainer-hands-on-tutorial/blob/master/src/cnn/images/cifar10_plot.png)
+![CNN inference result](https://github.com/corochann/chainer-hands-on-tutorial/blob/master/src/cnn/images/cifar10_predict.png)
 
