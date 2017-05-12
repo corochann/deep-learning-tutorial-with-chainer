@@ -14,48 +14,24 @@ class RNN(chainer.Chain):
             r2=L.Linear(n_units, n_units),
             l3=L.Linear(n_units, n_vocab),
         )
-        self.recurrent_h0 = 0
-        self.recurrent_h1 = 0
+        self.recurrent_h1 = None
+        self.recurrent_h2 = None
 
     def reset_state(self):
-        self.recurrent_h0 = 0
-        self.recurrent_h1 = 0
+        self.recurrent_h1 = None
+        self.recurrent_h2 = None
 
     def __call__(self, x):
-        h0 = self.embed(x)
-        h1 = self.l1(h0 + self.recurrent_h0)
-        self.recurrent_h0 = self.r1(h0)
-        h2 = self.l2(h1 + self.recurrent_h1)
-        self.recurrent_h1 = self.r2(h1)
-        y = self.l3(h2)
-        return y
-
-
-class RNNBackup(chainer.Chain):
-    """Simple Recurrent Neural Network implementation"""
-    def __init__(self, n_vocab, n_units):
-        super(RNNBackup, self).__init__(
-            embed=L.EmbedID(n_vocab, n_units),
-            l1=L.Linear(n_units, n_units),
-            r1=L.Linear(n_units, n_units),
-            l2=L.Linear(n_units, n_units),
-            r2=L.Linear(n_units, n_units),
-            l3=L.Linear(n_units, n_vocab),
-        )
-        self.recurrent_h0 = 0
-        self.recurrent_h1 = 0
-
-    def reset_state(self):
-        self.recurrent_h0 = 0
-        self.recurrent_h1 = 0
-
-    def __call__(self, x):
-        h0 = self.embed(x)
-        h1 = self.l1(h0 + self.recurrent_h0)
-        self.recurrent_h0 = self.r1(h0)
-        h2 = self.l2(h1 + self.recurrent_h1)
-        self.recurrent_h1 = self.r2(h1)
-        y = self.l3(h2)
+        h1 = self.embed(x)
+        if self.recurrent_h1 is None:
+            self.recurrent_h1 = F.tanh(self.l1(h1))
+        else:
+            self.recurrent_h1 = F.tanh(self.l1(h1) + self.r1(self.recurrent_h1))
+        if self.recurrent_h2 is None:
+            self.recurrent_h2 = F.tanh(self.l2(self.recurrent_h1))
+        else:
+            self.recurrent_h2 = F.tanh(self.l2(self.recurrent_h1) + self.r2(self.recurrent_h1))
+        y = self.l3(self.recurrent_h2)
         return y
 
 
@@ -74,28 +50,10 @@ class RecurrentBlock(chainer.Chain):
 
     def __call__(self, h):
         if self.rh is None:
-            xp = self.xp
-            self.rh = xp.zeros_like(h.data)
-        self.rh = self.activation(self.l(h) + self.r(self.rh))
+            self.rh = self.activation(self.l(h))
+        else:
+            self.rh = self.activation(self.l(h) + self.r(self.rh))
         return self.rh
-
-
-class RecurrentBlock2(chainer.Chain):
-    """Subblock for RNN for backup"""
-    def __init__(self, n_in, n_out):
-        super(RecurrentBlock2, self).__init__(
-            l=L.Linear(n_in, n_out),
-            r=L.Linear(n_in, n_out),
-        )
-        self.rh = 0
-
-    def reset_state(self):
-        self.rh = 0
-
-    def __call__(self, h):
-        y = self.l(h + self.rh)
-        self.rh = self.r(h)
-        return y
 
 
 class RNN2(chainer.Chain):
@@ -132,14 +90,17 @@ class RecurrentConcatBlock(chainer.Chain):
     It concatenates recurrent units instead of just adding sum.
     n_in cannot be None
     """
-    def __init__(self, n_in, n_out, n_recurrent=None):
+    def __init__(self, n_in, n_out, n_recurrent=None,
+                 activation_out=F.tanh, activation_recurrent=F.tanh):
         assert n_in is not None
         if n_recurrent is None:
             n_recurrent = n_out
         self.n_recurrent = n_recurrent
+        self.n_out = n_out
+        self.activation_out = activation_out
+        self.activation_recurrent = activation_recurrent
         super(RecurrentConcatBlock, self).__init__(
-            l=L.Linear(n_in + n_recurrent, n_out),
-            r=L.Linear(n_in + n_recurrent, n_recurrent),
+            l=L.Linear(n_in + n_recurrent, n_out + n_recurrent),
         )
         self.rh = None
 
@@ -152,19 +113,24 @@ class RecurrentConcatBlock(chainer.Chain):
             self.rh = xp.zeros((h.shape[0], self.n_recurrent), dtype=xp.float32)
         h_concat = F.concat((h, self.rh), axis=1)
         y = self.l(h_concat)
-        self.rh = self.r(h_concat)
-        return y
+        h_out, h_recurrent = F.split_axis(y, [self.n_out,], axis=1)
+        self.rh = self.activation_recurrent(h_recurrent)
+        return self.activation_out(h_out)
 
 
 class RNN3(chainer.Chain):
     """RNN implementation using RecurrentConcatBlock"""
-    def __init__(self, n_vocab, n_units, n_recurrent=None, train=True):
+    def __init__(self, n_vocab, n_units, n_recurrent=None, activation=F.tanh, train=True):
         super(RNN3, self).__init__(
             embed=L.EmbedID(n_vocab, n_units),
-            r1=RecurrentConcatBlock(n_units, n_units, n_recurrent=n_recurrent),
-            r2=RecurrentConcatBlock(n_units, n_units, n_recurrent=n_recurrent),
-            r3=RecurrentConcatBlock(n_units, n_units, n_recurrent=n_recurrent),
-            r4=RecurrentConcatBlock(n_units, n_units, n_recurrent=n_recurrent),
+            r1=RecurrentConcatBlock(n_units, n_units, n_recurrent=n_recurrent,
+                                    activation_out=activation, activation_recurrent=activation),
+            r2=RecurrentConcatBlock(n_units, n_units, n_recurrent=n_recurrent,
+                                    activation_out=activation, activation_recurrent=activation),
+            r3=RecurrentConcatBlock(n_units, n_units, n_recurrent=n_recurrent,
+                                    activation_out=activation, activation_recurrent=activation),
+            r4=RecurrentConcatBlock(n_units, n_units, n_recurrent=n_recurrent,
+                                    activation_out=activation, activation_recurrent=activation),
             l5=L.Linear(n_units, n_vocab),
         )
 
