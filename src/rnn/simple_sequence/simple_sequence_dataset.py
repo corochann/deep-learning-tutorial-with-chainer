@@ -1,6 +1,6 @@
 import numpy as np
 
-N_VOCABRARY = 10
+N_VOCABRARY = 20
 
 def get_simple_sequence(n_vocab, repeat=100):
     data = []

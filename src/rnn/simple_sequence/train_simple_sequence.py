@@ -1,4 +1,7 @@
 from __future__ import print_function
+
+import os
+import sys
 import argparse
 
 import matplotlib
@@ -11,9 +14,12 @@ import chainer.links as L
 from chainer import training, iterators, serializers, optimizers
 from chainer.training import extensions
 
-#from src.rnn.RNN import RNN, RNN2
-from RNN import RNN, RNN2, RNN3
-from simple_sequence_dataset import N_VOCABRARY, get_simple_sequence
+sys.path.append(os.pardir)
+from RNN import RNN
+from RNN2 import RNN2
+from RNN3 import RNN3
+from RNNForLM import RNNForLM
+from simple_sequence.simple_sequence_dataset import N_VOCABRARY, get_simple_sequence
 
 # Dataset iterator to create a batch of sequences at different positions.
 # This iterator returns a pair of current words and the next words. Each
@@ -117,14 +123,15 @@ def main():
         'rnn': RNN,
         'rnn2': RNN2,
         'rnn3': RNN3,
+        'lstm': RNNForLM
     }
 
     parser = argparse.ArgumentParser(description='RNN example')
     parser.add_argument('--arch', '-a', choices=archs.keys(),
-                        default='rnn2', help='Net architecture')
-    parser.add_argument('--unit', '-u', type=int, default=100,
-                        help='Number of LSTM units in each layer')
-    parser.add_argument('--bproplen', '-l', type=int, default=5,
+                        default='rnn3', help='Net architecture')
+    parser.add_argument('--unit', '-u', type=int, default=300,
+                        help='Number of RNN units in each layer')
+    parser.add_argument('--bproplen', '-l', type=int, default=30,
                         help='Number of words in each mini-batch '
                              '(= length of truncated BPTT)')
     parser.add_argument('--batchsize', '-b', type=int, default=10,
@@ -147,7 +154,7 @@ def main():
     # 1. Setup model
     #model = archs[args.arch](n_vocab=N_VOCABRARY, n_units=args.unit)  # activation=F.leaky_relu
     model = archs[args.arch](n_vocab=N_VOCABRARY,
-                             n_units=args.unit, activation=F.tanh)
+                             n_units=args.unit)  # , activation=F.tanh
     classifier_model = L.Classifier(model)
 
     if args.gpu >= 0:

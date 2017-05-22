@@ -4,13 +4,15 @@ model must be trained before inference,
 train_simple_sequence.py must be executed beforehand.
 """
 from __future__ import print_function
-import os
+
 import argparse
+import os
 
-import numpy as np
 import matplotlib
+import numpy as np
 
-from simple_sequence_dataset import N_VOCABRARY, get_simple_sequence
+from simple_sequence.simple_sequence_dataset import N_VOCABRARY, \
+    get_simple_sequence
 
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -20,7 +22,9 @@ import chainer.links as L
 from chainer import training, iterators, serializers, optimizers, Variable, cuda
 from chainer.training import extensions
 
-from RNN import RNN, RNN2, RNN3
+from RNN import RNN
+from RNN2 import RNN2
+from RNN3 import RNN3
 
 
 def main():
