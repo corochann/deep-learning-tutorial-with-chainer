@@ -15,7 +15,6 @@ from chainer.training import extensions
 from RNN import RNN, RNN2, RNN3
 from simple_sequence_dataset import N_VOCABRARY, get_simple_sequence
 
-
 # Dataset iterator to create a batch of sequences at different positions.
 # This iterator returns a pair of current words and the next words. Each
 # example is a part of sequences starting from the different offsets
@@ -146,7 +145,9 @@ def main():
     print('')
 
     # 1. Setup model
-    model = archs[args.arch](n_vocab=N_VOCABRARY, n_units=args.unit, activation=F.leaky_relu)
+    #model = archs[args.arch](n_vocab=N_VOCABRARY, n_units=args.unit)  # activation=F.leaky_relu
+    model = archs[args.arch](n_vocab=N_VOCABRARY,
+                             n_units=args.unit, activation=F.tanh)
     classifier_model = L.Classifier(model)
 
     if args.gpu >= 0:

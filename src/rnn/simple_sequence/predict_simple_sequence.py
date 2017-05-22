@@ -52,7 +52,7 @@ def main():
     print('')
 
     # Model Setup
-    model = archs[args.arch](n_vocab=N_VOCABRARY, n_units=args.unit, activation=F.leaky_relu)
+    model = archs[args.arch](n_vocab=N_VOCABRARY, n_units=args.unit, activation=F.tanh)
     classifier_model = L.Classifier(model)
     if args.gpu >= 0:
         chainer.cuda.get_device(args.gpu).use()  # Make a specified GPU current
