@@ -48,8 +48,8 @@ class RNN3(chainer.Chain):
                                     activation_out=activation, activation_recurrent=activation),
             r3=RecurrentConcatBlock(n_units, n_units, n_recurrent=n_recurrent,
                                     activation_out=activation, activation_recurrent=activation),
-            r4=RecurrentConcatBlock(n_units, n_units, n_recurrent=n_recurrent,
-                                    activation_out=activation, activation_recurrent=activation),
+            #r4=RecurrentConcatBlock(n_units, n_units, n_recurrent=n_recurrent,
+            #                        activation_out=activation, activation_recurrent=activation),
             l5=L.Linear(n_units, n_vocab),
         )
 
@@ -57,13 +57,13 @@ class RNN3(chainer.Chain):
         self.r1.reset_state()
         self.r2.reset_state()
         self.r3.reset_state()
-        self.r4.reset_state()
+        #self.r4.reset_state()
 
     def __call__(self, x):
         h = self.embed(x)
         h = self.r1(h)
         h = self.r2(h)
         h = self.r3(h)
-        h = self.r4(h)
+        #h = self.r4(h)
         y = self.l5(h)
         return y

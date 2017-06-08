@@ -11,7 +11,7 @@ import os
 import matplotlib
 import numpy as np
 
-from simple_sequence.simple_sequence_dataset import N_VOCABRARY, \
+from simple_sequence.simple_sequence_dataset import N_VOCABULARY, \
     get_simple_sequence
 
 matplotlib.use('Agg')
@@ -36,19 +36,19 @@ def main():
 
     parser = argparse.ArgumentParser(description='simple_sequence RNN predict code')
     parser.add_argument('--arch', '-a', choices=archs.keys(),
-                        default='rnn2', help='Net architecture')
+                        default='rnn', help='Net architecture')
     #parser.add_argument('--batchsize', '-b', type=int, default=64,
     #                    help='Number of images in each mini-batch')
-    parser.add_argument('--primeindex', '-p', type=int, default=1,
-                        help='base index data, used for sequence generation')
-    parser.add_argument('--length', '-l', type=int, default=100,
-                        help='length of the generated sequence')
-    parser.add_argument('--modelpath', '-m', default='result/rnn2_simple_sequence.model',
-                        help='Model path to be loaded')
     parser.add_argument('--unit', '-u', type=int, default=100,
                         help='Number of LSTM units in each layer')
     parser.add_argument('--gpu', '-g', type=int, default=-1,
                         help='GPU ID (negative value indicates CPU)')
+    parser.add_argument('--primeindex', '-p', type=int, default=1,
+                        help='base index data, used for sequence generation')
+    parser.add_argument('--length', '-l', type=int, default=100,
+                        help='length of the generated sequence')
+    parser.add_argument('--modelpath', '-m', default='result/rnn_simple_sequence.model',
+                        help='Model path to be loaded')
     args = parser.parse_args()
 
     print('GPU: {}'.format(args.gpu))
@@ -56,7 +56,7 @@ def main():
     print('')
 
     # Model Setup
-    model = archs[args.arch](n_vocab=N_VOCABRARY, n_units=args.unit, activation=F.tanh)
+    model = archs[args.arch](n_vocab=N_VOCABULARY, n_units=args.unit)
     classifier_model = L.Classifier(model)
     if args.gpu >= 0:
         chainer.cuda.get_device(args.gpu).use()  # Make a specified GPU current
