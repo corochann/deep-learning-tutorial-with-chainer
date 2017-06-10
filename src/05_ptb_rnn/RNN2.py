@@ -6,10 +6,10 @@ import chainer.links as L
 class RecurrentBlock(chainer.Chain):
     """Subblock for RNN"""
     def __init__(self, n_in, n_out, activation=F.tanh):
-        super(RecurrentBlock, self).__init__(
-            l=L.Linear(n_in, n_out),
-            r=L.Linear(n_in, n_out),
-        )
+        super(RecurrentBlock, self).__init__()
+        with self.init_scope():
+            self.l = L.Linear(n_in, n_out)
+            self.r = L.Linear(n_in, n_out)
         self.rh = None
         self.activation = activation
 
@@ -26,15 +26,16 @@ class RecurrentBlock(chainer.Chain):
 
 class RNN2(chainer.Chain):
     """RNN implementation using RecurrentBlock"""
-    def __init__(self, n_vocab, n_units, activation=F.tanh, train=True):
-        super(RNN2, self).__init__(
-            embed=L.EmbedID(n_vocab, n_units),
-            r1=RecurrentBlock(n_units, n_units, activation=activation),
-            r2=RecurrentBlock(n_units, n_units, activation=activation),
-            r3=RecurrentBlock(n_units, n_units, activation=activation),
-            #r4=RecurrentBlock(n_units, n_units, activation=activation),
-            l5=L.Linear(n_units, n_vocab),
-        )
+    def __init__(self, n_vocab, n_units, activation=F.tanh):
+        super(RNN2, self).__init__()
+        with self.init_scope():
+            self.embed = L.EmbedID(n_vocab, n_units)
+            self.r1 = RecurrentBlock(n_units, n_units, activation=activation)
+            self.r2 = RecurrentBlock(n_units, n_units, activation=activation)
+            self.r3 = RecurrentBlock(n_units, n_units, activation=activation)
+            #self.r4 = RecurrentBlock(n_units, n_units, activation=activation)
+            self.l5 = L.Linear(n_units, n_vocab)
+
 
     def reset_state(self):
         self.r1.reset_state()

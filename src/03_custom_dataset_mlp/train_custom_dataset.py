@@ -8,7 +8,7 @@ from chainer import training
 from chainer.training import extensions
 from chainer import serializers
 
-from mlp2 import MLP2
+from my_mlp import MyMLP
 from my_dataset import MyDataset
 
 
@@ -37,7 +37,7 @@ def main():
     # Set up a neural network to train
     # Classifier reports softmax cross entropy loss and accuracy at every
     # iteration, which will be used by the PrintReport extension below.
-    model = MLP2(args.unit)
+    model = MyMLP(args.unit)
 
     if args.gpu >= 0:
         chainer.cuda.get_device(args.gpu).use()  # Make a specified GPU current

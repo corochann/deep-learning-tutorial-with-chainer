@@ -10,12 +10,13 @@ class RNNForLM(chainer.Chain):
     """Definition of a recurrent net for language modeling"""
 
     def __init__(self, n_vocab, n_units, train=True):
-        super(RNNForLM, self).__init__(
-            embed=L.EmbedID(n_vocab, n_units),
-            l1=L.LSTM(n_units, n_units),
-            l2=L.LSTM(n_units, n_units),
-            l3=L.Linear(n_units, n_vocab),
-        )
+        super(RNNForLM, self).__init__()
+        with self.init_scope():
+            self.embed = L.EmbedID(n_vocab, n_units)
+            self.l1 = L.LSTM(n_units, n_units)
+            self.l2 = L.LSTM(n_units, n_units)
+            self.l3 = L.Linear(n_units, n_vocab)
+
         for param in self.params():
             param.data[...] = np.random.uniform(-0.1, 0.1, param.data.shape)
         self.train = train

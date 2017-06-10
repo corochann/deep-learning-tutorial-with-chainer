@@ -8,7 +8,7 @@ from chainer import training
 from chainer.training import extensions
 from chainer import serializers
 
-import mlp as mlp
+import mlp
 
 
 def main():

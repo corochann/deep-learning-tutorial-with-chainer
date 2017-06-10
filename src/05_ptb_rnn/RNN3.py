@@ -18,9 +18,9 @@ class RecurrentConcatBlock(chainer.Chain):
         self.n_out = n_out
         self.activation_out = activation_out
         self.activation_recurrent = activation_recurrent
-        super(RecurrentConcatBlock, self).__init__(
-            l=L.Linear(n_in + n_recurrent, n_out + n_recurrent),
-        )
+        super(RecurrentConcatBlock, self).__init__()
+        with self.init_scope():
+            self.l = L.Linear(n_in + n_recurrent, n_out + n_recurrent)
         self.rh = None
 
     def reset_state(self):
@@ -39,19 +39,19 @@ class RecurrentConcatBlock(chainer.Chain):
 
 class RNN3(chainer.Chain):
     """RNN implementation using RecurrentConcatBlock"""
-    def __init__(self, n_vocab, n_units, n_recurrent=None, activation=F.tanh, train=True):
-        super(RNN3, self).__init__(
-            embed=L.EmbedID(n_vocab, n_units),
-            r1=RecurrentConcatBlock(n_units, n_units, n_recurrent=n_recurrent,
-                                    activation_out=activation, activation_recurrent=activation),
-            r2=RecurrentConcatBlock(n_units, n_units, n_recurrent=n_recurrent,
-                                    activation_out=activation, activation_recurrent=activation),
-            r3=RecurrentConcatBlock(n_units, n_units, n_recurrent=n_recurrent,
-                                    activation_out=activation, activation_recurrent=activation),
-            #r4=RecurrentConcatBlock(n_units, n_units, n_recurrent=n_recurrent,
+    def __init__(self, n_vocab, n_units, n_recurrent=None, activation=F.tanh):
+        super(RNN3, self).__init__()
+        with self.init_scope():
+            self.embed = L.EmbedID(n_vocab, n_units)
+            self.r1 = RecurrentConcatBlock(n_units, n_units, n_recurrent=n_recurrent,
+                                    activation_out=activation, activation_recurrent=activation)
+            self.r2 = RecurrentConcatBlock(n_units, n_units, n_recurrent=n_recurrent,
+                                    activation_out=activation, activation_recurrent=activation)
+            self.r3 = RecurrentConcatBlock(n_units, n_units, n_recurrent=n_recurrent,
+                                    activation_out=activation, activation_recurrent=activation)
+            #self.r4=RecurrentConcatBlock(n_units, n_units, n_recurrent=n_recurrent,
             #                        activation_out=activation, activation_recurrent=activation),
-            l5=L.Linear(n_units, n_vocab),
-        )
+            self.l5 = L.Linear(n_units, n_vocab)
 
     def reset_state(self):
         self.r1.reset_state()

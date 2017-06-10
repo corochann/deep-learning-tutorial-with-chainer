@@ -16,9 +16,7 @@ import chainer.links as L
 from chainer import Chain, Variable, optimizers, serializers
 from chainer import datasets, training, cuda, computational_graph
 
-
-import src.mnist.mlp as mlp
-
+import mlp
 
 def main():
     parser = argparse.ArgumentParser(description='Chainer example: MNIST')
@@ -54,7 +52,6 @@ def main():
             #      .format(i, prediction, test[i][1]))
             wrong_count += 1
     print('wrong inference {}/{}'.format(wrong_count, len(test)))
-
 
     """Original code referenced from https://github.com/hido/chainer-handson"""
     ROW = 4

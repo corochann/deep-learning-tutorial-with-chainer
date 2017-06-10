@@ -21,12 +21,12 @@ from chainer import serializers
 class MLP(chainer.Chain):
     """Neural Network definition, Multi Layer Perceptron"""
     def __init__(self, n_units, n_out):
-        super(MLP, self).__init__(
-            # the size of the inputs to each layer will be inferred
-            l1=L.Linear(None, n_units),  # n_in -> n_units
-            l2=L.Linear(None, n_units),  # n_units -> n_units
-            l3=L.Linear(None, n_out),  # n_units -> n_out
-        )
+        super(MLP, self).__init__()
+        with self.init_scope():
+            # the size of the inputs to each layer will be inferred when `None`
+            self.l1 = L.Linear(None, n_units)  # n_in -> n_units
+            self.l2 = L.Linear(None, n_units)  # n_units -> n_units
+            self.l3 = L.Linear(None, n_out)    # n_units -> n_out
 
     def __call__(self, x):
         h1 = F.relu(self.l1(x))
@@ -40,9 +40,9 @@ class SoftmaxClassifier(chainer.Chain):
     predictor is a model that predicts the probability of each label.
     """
     def __init__(self, predictor):
-        super(SoftmaxClassifier, self).__init__(
-            predictor=predictor
-        )
+        super(SoftmaxClassifier, self).__init__()
+        with self.init_scope():
+            self.predictor = predictor
 
     def __call__(self, x, t):
         y = self.predictor(x)

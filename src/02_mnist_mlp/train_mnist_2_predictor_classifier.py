@@ -13,7 +13,7 @@ from chainer import cuda
 from chainer import computational_graph
 from chainer import serializers
 
-import mlp as mlp
+import mlp
 
 
 def main():
@@ -109,11 +109,14 @@ def main():
         sum_loss = 0
         for i in six.moves.range(0, N_test, batchsize):
             index = np.asarray(list(range(i, i + batchsize)))
-            x = chainer.Variable(xp.asarray(test[index][0]),
-                                 volatile='on')
-            t = chainer.Variable(xp.asarray(test[index][1]),
-                                 volatile='on')
-            loss = classifier_model(x, t)
+            x = chainer.Variable(xp.asarray(test[index][0]))
+            t = chainer.Variable(xp.asarray(test[index][1]))
+            with chainer.no_backprop_mode():
+                # When back propagation is not necessary,
+                # we can omit constructing graph path for better performance.
+                # `no_backprop_mode()` is introduced from chainer v2,
+                # while `volatile` flag was used in chainer v1.
+                loss = classifier_model(x, t)
             sum_loss += float(loss.data) * len(t.data)
             sum_accuracy += float(classifier_model.accuracy.data) * len(t.data)
 
