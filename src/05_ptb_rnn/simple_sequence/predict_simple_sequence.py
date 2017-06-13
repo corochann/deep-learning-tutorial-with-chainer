@@ -52,15 +52,13 @@ def main():
     args = parser.parse_args()
 
     print('GPU: {}'.format(args.gpu))
-    #print('# Minibatch-size: {}'.format(args.batchsize))
     print('')
 
     # Model Setup
     model = archs[args.arch](n_vocab=N_VOCABULARY, n_units=args.unit)
-    classifier_model = L.Classifier(model)
     if args.gpu >= 0:
         chainer.cuda.get_device(args.gpu).use()  # Make a specified GPU current
-        classifier_model.to_gpu()  # Copy the model to the GPU
+        model.to_gpu()                           # Copy the model to the GPU
     xp = np if args.gpu < 0 else cuda.cupy
 
     serializers.load_npz(args.modelpath, model)
