@@ -29,6 +29,9 @@ if __name__ == '__main__':
 
     print('Access by index dataset[1] = ', dataset[1])
     print('Access by slice dataset[:3] = ', dataset[:3])
-    print('Access by random index list dataset[[3, 5]] = ', dataset[[3, 5]])
+    print('Access by list dataset[[3, 5]] = ', dataset[[3, 5]])
     index = np.arange(3)
     print('Access by numpy array dataset[[0, 1, 2]] = ', dataset[index])
+    # Randomly take 3 data
+    index = np.random.permutation(len(dataset))[:3]
+    print('dataset[{}] = {}'.format(index, dataset[index]))

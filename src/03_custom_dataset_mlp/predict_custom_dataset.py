@@ -66,10 +66,9 @@ def main():
     print('y', y_test)
     print('t', t_test)
 
-    # show graphical results of first 20 data to understand what's going on in inference stage
     plt.figure()
-    plt.plot(x_test, y_test, 'o', label='y')
-    plt.plot(x_test, t_test, 'o', label='t')
+    plt.plot(x_test, t_test, 'o', label='test actual')
+    plt.plot(x_test, y_test, 'o', label='test predict')
     plt.legend()
     plt.savefig('predict.png')
 
