@@ -23,7 +23,7 @@ from my_dataset import MyDataset
 
 def main():
     parser = argparse.ArgumentParser(description='Chainer example: MNIST')
-    parser.add_argument('--modelpath', '-m', default='result/mlp.model',
+    parser.add_argument('--modelpath', '-m', default='result/mymlp.model',
                         help='Model path to be loaded')
     parser.add_argument('--gpu', '-g', type=int, default=-1,
                         help='GPU ID (negative value indicates CPU)')
@@ -49,6 +49,7 @@ def main():
 
     serializers.load_npz(args.modelpath, model)
 
+    # Predict
     x_list = []
     y_list = []
     t_list = []

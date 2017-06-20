@@ -1,3 +1,5 @@
+import numpy as np
+
 import chainer
 import chainer.functions as F
 import chainer.links as L
@@ -37,3 +39,20 @@ class MyMLP(chainer.Chain):
         with chainer.using_config('train', False):
             with chainer.no_backprop_mode():
                 return self.forward(*args)
+
+    def predict2(self, *args, batchsize=32):
+        data = args[0]
+        x_list = []
+        y_list = []
+        t_list = []
+        for i in range(0, len(data), batchsize):
+            x, t = concat_examples(data[i:i + batchsize])
+            y = self.predict(x)
+            y_list.append(y.data)
+            x_list.append(x)
+            t_list.append(t)
+
+        x_array = np.concatenate(x_list)[:, 0]
+        y_array = np.concatenate(y_list)[:, 0]
+        t_array = np.concatenate(t_list)[:, 0]
+        return x_array, y_array, t_array

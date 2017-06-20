@@ -13,7 +13,7 @@ from my_dataset import MyDataset
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Chainer example: MNIST')
+    parser = argparse.ArgumentParser(description='Train custom dataset')
     parser.add_argument('--batchsize', '-b', type=int, default=10,
                         help='Number of images in each mini-batch')
     parser.add_argument('--epoch', '-e', type=int, default=20,
@@ -81,10 +81,14 @@ def main():
     # either the updater or the evaluator.
     trainer.extend(extensions.PrintReport(
         ['epoch', 'main/loss', 'validation/main/loss', 'elapsed_time']))
+
     # Plot graph for loss for each epoch
-    trainer.extend(extensions.PlotReport(
-        ['main/loss', 'validation/main/loss'],
-        x_key='epoch', file_name='loss.png'))
+    if extensions.PlotReport.available():
+        trainer.extend(extensions.PlotReport(
+            ['main/loss', 'validation/main/loss'],
+            x_key='epoch', file_name='loss.png'))
+    else:
+        print('Warning: PlotReport is not available in your environment')
     # Print a progress bar to stdout
     trainer.extend(extensions.ProgressBar())
 
@@ -94,7 +98,7 @@ def main():
 
     # Run the training
     trainer.run()
-    serializers.save_npz('{}/mlp.model'.format(args.out), model)
+    serializers.save_npz('{}/mymlp.model'.format(args.out), model)
 
 if __name__ == '__main__':
     main()
