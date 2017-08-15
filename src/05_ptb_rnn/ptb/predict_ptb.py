@@ -61,6 +61,10 @@ def main():
     print('#vocab =', n_vocab)
     print('')
 
+    # load vocabulary
+    ptb_word_id_dict = chainer.datasets.get_ptb_words_vocabulary()
+    ptb_id_word_dict = dict((v, k) for k, v in ptb_word_id_dict.items())
+
     # Model Setup
     model = archs[args.arch](n_vocab=n_vocab, n_units=args.unit)
     classifier_model = L.Classifier(model)
@@ -86,7 +90,9 @@ def main():
         predicted_sequence.append(current_index)
         prev_index = current_index
 
+    predicted_text_list = [ptb_id_word_dict[i] for i in predicted_sequence]
     print('Predicted sequence: ', predicted_sequence)
+    print('Predicted text: ', ' '.join(predicted_text_list))
 
 if __name__ == '__main__':
     main()
