@@ -1,6 +1,10 @@
 from __future__ import print_function
 import argparse
 
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
 import chainer
 import chainer.functions as F
 import chainer.links as L
@@ -78,15 +82,17 @@ def main():
     trainer.extend(extensions.PrintReport(
         ['epoch', 'main/loss', 'validation/main/loss',
          'main/accuracy', 'validation/main/accuracy', 'elapsed_time']))
-    # Plot graph for loss for each epoch
-    trainer.extend(extensions.PlotReport(
-        ['main/loss', 'validation/main/loss'],
-        x_key='epoch', file_name='loss.png'))
-    trainer.extend(extensions.PlotReport(
-        ['main/accuracy', 'validation/main/accuracy'],
-        x_key='epoch',
-        file_name='accuracy.png'))
-    # Print a progress bar to stdout
+
+    if extensions.PlotReport.available():
+        # Plot graph for loss for each epoch
+        trainer.extend(extensions.PlotReport(
+            ['main/loss', 'validation/main/loss'],
+            x_key='epoch', file_name='loss.png'))
+        trainer.extend(extensions.PlotReport(
+            ['main/accuracy', 'validation/main/accuracy'],
+            x_key='epoch',
+            file_name='accuracy.png'))
+        # Print a progress bar to stdout
     trainer.extend(extensions.ProgressBar())
 
     if args.resume:

@@ -1,5 +1,7 @@
 """
-RNN Training code with simple sequence dataset
+RNN Training code with Penn Treebank (ptb) dataset
+
+Ref: https://github.com/chainer/chainer/blob/master/examples/ptb/train_ptb.py
 """
 from __future__ import print_function
 
@@ -7,6 +9,7 @@ import os
 import sys
 import argparse
 
+import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -22,10 +25,17 @@ from RNN import RNN
 from RNN2 import RNN2
 from RNN3 import RNN3
 from RNNForLM import RNNForLM
-from simple_sequence.simple_sequence_dataset import N_VOCABULARY, get_simple_sequence
 from parallel_sequential_iterator import ParallelSequentialIterator
 from bptt_updater import BPTTUpdater
 
+
+
+# Routine to rewrite the result dictionary of LogReport to add perplexity
+# values
+def compute_perplexity(result):
+    result['perplexity'] = np.exp(result['main/loss'])
+    if 'validation/main/loss' in result:
+        result['val_perplexity'] = np.exp(result['validation/main/loss'])
 
 
 def main():
@@ -60,13 +70,18 @@ def main():
     print('# Architecture: {}'.format(args.arch))
     print('# Minibatch-size: {}'.format(args.batchsize))
     print('# epoch: {}'.format(args.epoch))
+
+    # 1. Load dataset: Penn Tree Bank long word sequence dataset
+    train, val, test = chainer.datasets.get_ptb_words()
+    n_vocab = max(train) + 1  # train is just an array of integers
+    print('# vocab: {}'.format(n_vocab))
     print('')
 
-    # 1. Setup model
-    #model = archs[args.arch](n_vocab=N_VOCABRARY, n_units=args.unit)  # activation=F.leaky_relu
-    model = archs[args.arch](n_vocab=N_VOCABULARY,
+    # 2. Setup model
+    model = archs[args.arch](n_vocab=n_vocab,
                              n_units=args.unit)  # , activation=F.tanh
     classifier_model = L.Classifier(model)
+    classifier_model.compute_accuracy = False  # we only want the perplexity
 
     if args.gpu >= 0:
         chainer.cuda.get_device(args.gpu).use()  # Make a specified GPU current
@@ -76,17 +91,14 @@ def main():
     eval_model = classifier_model.predictor
 
     # 2. Setup an optimizer
-    optimizer = optimizers.Adam(alpha=0.0005)
+    optimizer = optimizers.Adam(alpha=0.001)
     #optimizer = optimizers.MomentumSGD()
     optimizer.setup(classifier_model)
 
-    # 3. Load dataset
-    train = get_simple_sequence(N_VOCABULARY)
-    test = get_simple_sequence(N_VOCABULARY)
-
     # 4. Setup an Iterator
-    train_iter = ParallelSequentialIterator(train, args.batchsize)
-    test_iter = ParallelSequentialIterator(test, args.batchsize, repeat=False)
+    train_iter =ParallelSequentialIterator(train, args.batchsize)
+    val_iter = ParallelSequentialIterator(val, 1, repeat=False)
+    test_iter = ParallelSequentialIterator(test, 1, repeat=False)
 
     # 5. Setup an Updater
     updater = BPTTUpdater(train_iter, optimizer, args.bproplen, args.gpu)
@@ -94,7 +106,7 @@ def main():
     trainer = training.Trainer(updater, (args.epoch, 'epoch'), out=args.out)
 
     # Evaluate the model with the test dataset for each epoch
-    trainer.extend(extensions.Evaluator(test_iter, eval_classifier_model,
+    trainer.extend(extensions.Evaluator(val_iter, eval_classifier_model,
                                         device=args.gpu,
                                         # Reset the RNN state at the beginning of each evaluation
                                         eval_hook=lambda _: eval_model.reset_state())
@@ -102,19 +114,17 @@ def main():
 
     trainer.extend(extensions.dump_graph('main/loss'))
     trainer.extend(extensions.snapshot(), trigger=(1, 'epoch'))
-    trainer.extend(extensions.LogReport())
+    interval = 500
+    trainer.extend(extensions.LogReport(postprocess=compute_perplexity,
+                                        trigger=(interval, 'iteration')))
     trainer.extend(extensions.PrintReport(
-        ['epoch', 'main/loss', 'validation/main/loss',
-         'main/accuracy', 'validation/main/accuracy', 'elapsed_time']))
+        ['epoch', 'iteration', 'perplexity', 'val_perplexity', 'elapsed_time']
+    ), trigger=(interval, 'iteration'))
     trainer.extend(extensions.PlotReport(
-        ['main/loss', 'validation/main/loss'],
-        x_key='epoch', file_name='loss.png'))
-    trainer.extend(extensions.PlotReport(
-        ['main/accuracy', 'validation/main/accuracy'],
-        x_key='epoch',
-        file_name='accuracy.png'))
+        ['perplexity', 'val_perplexity'],
+        x_key='epoch', file_name='perplexity.png'))
 
-    # trainer.extend(extensions.ProgressBar())
+    trainer.extend(extensions.ProgressBar(update_interval=10))
 
     # Resume from a snapshot
     if args.resume:
@@ -122,8 +132,16 @@ def main():
 
     # Run the training
     trainer.run()
-    serializers.save_npz('{}/{}_simple_sequence.model'
+    serializers.save_npz('{}/{}_ptb.model'
                          .format(args.out, args.arch), model)
+
+    # Evaluate the final model
+    print('test')
+    eval_model.reset_state()
+    evaluator = extensions.Evaluator(test_iter, eval_classifier_model, device=args.gpu)
+    result = evaluator()
+    print('test perplexity:', np.exp(float(result['main/loss'])))
+
 
 if __name__ == '__main__':
     main()

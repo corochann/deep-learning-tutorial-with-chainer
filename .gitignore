@@ -97,3 +97,4 @@ src/cnn/result-cifar10-cnnsmall/
 src/rnn/simple_sequence/result/
 src/03_custom_dataset_mlp/result/
 src/02_mnist_mlp/result/
+src/05_ptb_rnn/ptb/result/
