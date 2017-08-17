@@ -29,7 +29,6 @@ from parallel_sequential_iterator import ParallelSequentialIterator
 from bptt_updater import BPTTUpdater
 
 
-
 # Routine to rewrite the result dictionary of LogReport to add perplexity
 # values
 def compute_perplexity(result):
